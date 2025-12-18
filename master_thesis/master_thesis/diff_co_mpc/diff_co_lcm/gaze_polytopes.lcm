@@ -1,0 +1,15 @@
+package diff_co_lcm;
+
+struct lcmt_gaze_polytopes
+{
+  int64_t utime;
+  int32_t num_vertices;
+  int32_t num_simplices;
+  int32_t num_polytopes;
+  boolean is_placing_spot_hidden;
+
+  double vertices[num_vertices][3];
+  int32_t simplices[num_simplices][3];
+  int32_t indices[num_polytopes][4];
+  
+}

@@ -1,0 +1,9 @@
+nlp
+nlp_jac_g
+nlp_hess_l
+nlp_g
+nlp_f
+nlp_grad_f
+lbg_ubg_func
+lbx_ubx_func
+f_gaze

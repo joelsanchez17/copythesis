@@ -1,0 +1,11 @@
+package diff_co_lcm;
+
+struct lcmt_bspline
+{
+  int64_t utime;
+  int32_t order;
+  int32_t num_control_points;
+  int32_t num_positions;  
+  double control_points[num_positions][num_control_points];
+  
+}

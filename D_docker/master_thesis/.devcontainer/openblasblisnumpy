@@ -1,0 +1,122 @@
+hwloc-ls
+
+cd ThirdParty-Metis/
+./get.Metis 
+./configure
+make -j6
+sudo make install
+
+cd ThirdParty-HSL
+# ./configure FFLAGS="-Ofast -march=native" CFLAGS="-Ofast -march=native" CPPFLAGS="-Ofast -march=native" --with-lapack-lflags="$(pkg-config --libs openblas)"
+cd coinhsl
+LD_LIBRARY_PATH=/opt/openblas/lib/$LD_LIBRARY_PATH PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/:$PKG_CONFIG_PATH meson setup builddir --buildtype=release -Dlibblas=blis -Dliblapack=openblas --pkg-config-path=/opt/openblas/lib/pkgconfig/:$PKG_CONFIG_PATH -Dliblapack_path=/opt/openblas/lib/
+meson compile -C builddir
+meson install -C builddir
+sudo ln -s /usr/local/lib/x86_64-linux-gnu/libcoinhsl.so /usr/local/lib/libhsl.so
+
+cd ipopt/build
+PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/ ../configure FFLAGS="-Ofast -march=native" CFLAGS="-Ofast -march=native" CPPFLAGS="-Ofast -march=native"  --with-lapack-lflags="$(PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/ pkg-config --libs blis) $(PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/ pkg-config --libs openblas)" --with-hsl-lflags="-L/usr/lib/x86_64-linux-gnu -lcoinhsl" --with-hsl-cflags=-I/usr/include
+PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/ ../configure FFLAGS="-Ofast -march=native" CFLAGS="-Ofast -march=native" CPPFLAGS="-Ofast -march=native"  --with-lapack-lflags="$(PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/ pkg-config --libs openblas)" --with-hsl-lflags="-L/usr/lib/x86_64-linux-gnu -lcoinhsl" --with-hsl-cflags=-I/usr/include
+PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/ ../configure FFLAGS="-Ofast -march=native" CFLAGS="-Ofast -march=native" CPPFLAGS="-Ofast -march=native"  --with-lapack-lflags="$(PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/ pkg-config --libs blis) $(PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/ pkg-config --libs openblas)" --with-hsl-lflags="-L/usr/lib/x86_64-linux-gnu -lcoinhsl" --with-hsl-cflags=-I/usr/include
+
+PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/ ../configure --with-lapack-lflags="$(PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/ pkg-config --libs blis) $(PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/ pkg-config --libs openblas)" --with-hsl-lflags=" -L/usr/local/lib -lhsl -lblis -lflame" --with-hsl-cflags="-I/usr/local/include"
+
+
+cd ~/blis/
+./configure --enable-threading=openmp --enable-cblas auto 
+make -j6
+sudo make install
+sudo ln -s /usr/local/lib/libblis-mt.so /usr/local/lib/libblis.so
+
+cd OpenBLAS/
+make FC=gfortran
+USE_OPENMP=1 make FC=gfortran
+sudo make PREFIX=/opt/openblas install
+sudo touch /etc/ld.so.conf.d/openblas.conf
+sudo sh -c  "echo '/opt/openblas/lib' >> /etc/ld.so.conf.d/openblas.conf"
+sudo ldconfig
+
+git clone --depth 1 --branch v1.26.5 https://github.com/numpy/numpy.git
+cd numpy
+git submodule update --init
+python3 -m pip install -r build_requirements.txt
+PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/:$PKG_CONFIG_PATH MAKEFLAGS="-j$(nproc)" python -m pip install . -Csetup-args=-Dblas-order=blis -Csetup-args=-Dallow-noblas=false -Csetup-args=-Dlapack-order=openblas
+# PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/:$PKG_CONFIG_PATH MAKEFLAGS="-j$(nproc)" python -m pip install . -Csetup-args=-Dblas=blis -Csetup-args=-Dlapack=openblas
+OPENBLAS_NUM_THREADS=2 OMP_PLACES={0:6:2} OMP_PROC_BIND=True BLIS_NUM_THREADS=2 LD_PRELOAD= LD_LIBRARY_PATH=/opt/openblas/lib/$LD_LIBRARY_PATH python3 ~/teste.py
+
+import numpy as np
+import time
+
+t0 = time.perf_counter()
+
+for i in range(10):
+    a = np.random.rand(2500, 2500)
+    b = np.random.rand(2500, 2500)
+    c = a @ b
+print(time.perf_counter() - t0 )
+
+
+
+libflame:
+./configure --enable-multithreading=openmp --enable-cblas-interfaces --enable-supermatrix --enable-max-arg-list-hack --enable-lapack2flame --enable-optimizations="-march=native -O3" --enable-dynamic-build
+make ENABLE_EMBED_AOCLUTILS=1 -j
+sudo make install
+
+"""
+prefix=/usr/local
+exec_prefix=/usr/local
+libdir=/usr/local/lib
+includedir=/usr/local/include
+
+Name: libFlame
+Description: libflame is a portable library for dense matrix computations, providing complete functionality present in LAPACK
+Version: AOCL BLIS flame 4.2
+Libs: -L${libdir} -lflame -lblis
+Libs.private: -lflame -lblis
+""" > /usr/local/share/pkgconfig/flame.pc
+cd coinhsl
+meson setup builddir --buildtype=release -Dlibblas=blis -Dliblapack=flame
+# meson setup builddir --wipe --buildtype=release -Dlibblas=blis -Dliblapack=flame
+meson compile -C builddir
+meson install -C builddir
+sudo rm /usr/local/lib/libhsl.so
+sudo ln -s /usr/local/lib/x86_64-linux-gnu/libcoinhsl.so /usr/local/lib/libhsl.so
+# MK_EXC_HEADER_PATHS is ./src/lapack/x86/ ./src/lapack/x86/avx2/ ./src/lapack/x86/avx512/ ./src/lapack/x86/front/
+# INCLUDE_PATHS is -I./include/x86_64-unknown-linux-gnu -Isrc/lapacke/LAPACKE/include
+cd Ipopt/build
+../configure --with-lapack-lflags="$(pkg-config --libs flame) $(pkg-config --libs blis)" --with-hsl-lflags=" -L/usr/local/lib -lhsl -lblis -lflame" --with-hsl-cflags="-I/usr/local/include" 
+../configure --with-lapack-lflags="$(pkg-config --libs flame)" --with-hsl-lflags=" -L/usr/local/lib -lhsl $(pkg-config --libs flame)" --with-hsl-cflags="-I/usr/local/include" 
+
+NUMPY:
+
+NPY_BLAS_LIBS=-lblis NPY_CBLAS_LIBS=-lblis NPY_LAPACK_LIBS=-lflame,-lblis NP_BLAS_ORDER=blis NPY_LAPACK_ORDER=flame pip install --no-cache-dir -v . -Csetup-args=-Dblas=blis -Csetup-args=-Dlapack=flame -Csetup-args=-Dallow-noblas=false
+
+
+
+PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/ ../configure --with-lapack-lflags="/usr/local/lib/libblis.a $(PKG_CONFIG_PATH=/opt/openblas/lib/pkgconfig/ pkg-config --libs openblas)" --with-hsl-lflags=" -L/usr/local/lib -lhsl /usr/local/lib/libflame.a /usr/local/lib/libblis.a -fopenmp -lm" --with-hsl-cflags="-I/usr/local/include -fopenmp"
+../configure --with-lapack-lflags="$(pkg-config --libs flame) -fopenmp -lm -lstdc++" --with-hsl-lflags=" -L/usr/local/lib -lhsl $(pkg-config --libs flame) -fopenmp -lstdc++ -lm" --with-hsl-cflags="-I/usr/local/include -fopenmp" 
+RESOURCES:
+https://github.com/flame/libflame/issues/20
+https://github.com/spack/spack/issues/34170
+https://github.com/flame/blis/pull/473
+https://www.amd.com/content/dam/amd/en/documents/developer/version-4-2-documents/aocl/aocl-4-2-user-guide.pdf
+https://stackoverflow.com/questions/70827377/how-to-compile-ipopt-with-blis-and-libflame-on-windows-with-mingw-or-and-cygwin
+https://coin-or.github.io/Ipopt/INSTALL.html
+https://gcc.gnu.org/legacy-ml/gcc-help/2009-09/msg00108.html
+https://github.com/flame/blis/blob/master/docs/BuildSystem.md#linking-against-blis
+https://github.com/flame/blis/blob/master/docs/Multithreading.md#enabling-
+https://community.amd.com/t5/epyc-discussions/libflame-performance-comparison-with-mkl-lapack-optimal/m-p/612286
+https://github.com/flame/libflame/issues/28
+https://www.iwomp.org/wp-content/uploads/iwomp-2023-advanced-openmp-tutorial.pdf
+https://stackoverflow.com/questions/78469558/how-can-i-select-the-aocl-blis-lapack-libraries-for-building-numpy-on-windows-10
+
+prefix=/usr/local
+exec_prefix=/usr/local
+libdir=/usr/local/lib
+includedir=/usr/local/include
+
+Name: libFlame
+Description: libflame is a portable library for dense matrix computations, providing complete functionality present in LAPACK
+Version: AOCL BLIS flame 4.2.0
+Libs: -L${libdir} /usr/local/lib/libblis.a /usr/local/lib/libflame.a /usr/local/lib/libblis.a
+Libs.private: -L${libdir} /usr/local/lib/libblis.a /usr/local/lib/libflame.a /usr/local/lib/libblis.a

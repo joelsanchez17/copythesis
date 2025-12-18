@@ -1,0 +1,78 @@
+{
+	"name": "Stuff",
+    "build": { "dockerfile": "Dockerfile","context": ".." },
+    // https://github.com/microsoft/wslg/blob/main/samples/container/Containers.md
+    // https://github.com/microsoft/WSL/issues/7507
+    // GPU IN DOCKER IN WSL
+    // X11 FORWARDING AND BUGS
+    // https://github.com/microsoft/vscode-dev-containers/issues/1746
+    // https://github.com/microsoft/vscode-remote-release/issues/550
+    // tldr: devcontainer auto forwards X11 X1 to the container but that is super slow
+    // mount X0 to container and set DISPLAY to :0 makes it fast again without bugging the container build
+	"runArgs": [
+        // "--cap-add=SYS_PTRACE", // enable debugging, e.g. gdb
+        "--ipc=host", // shared memory transport with host, e.g. rviz GUIs
+        "--network=host", // network access to host interfaces, e.g. eth0
+        // "--pid=host", // DDS discovery with host, without --network=host
+        "--privileged", // device access to host peripherals, e.g. USB
+        // https://stackoverflow.com/questions/60840320/docker-50-performance-hit-on-cpu-intensive-code
+        // https://github.com/docker-library/python/issues/575
+        
+        // "--gpus=all",
+        "--device", "/dev/dxg",
+        "--device",
+        "/dev/dri/card0",
+        "--device",
+        "/dev/dri/renderD128",
+        "--volume",
+        "/tmp/.X11-unix/X0:/tmp/.X11-unix/X0:rw",
+        "--volume",
+        "/mnt/wslg:/mnt/wslg",
+        "--volume", "/usr/lib/wsl:/usr/lib/wsl",
+        "-v", "${localEnv:HOME}/.Xauthority:/tmp/.Xauthority"
+        
+    ],
+    
+    // "onCreateCommand": {
+        
+    //   },
+    // "initializeCommand": "echo \"export USERNAME=$USER\nexport USER_UID=$(id -u $USER)\nexport GROUPNAME=$(id -gn $USER)\nexport GROUP_GID=$(id -g $USER)\" > .devcontainer/.env",
+    // "remoteEnv": {"PYTHONPATH": "${workspaceFolder}:${containerEnv:PYTHONPATH}",},
+    "containerEnv": {
+        "DISPLAY": "${localEnv:DISPLAY}",
+        "WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
+        "XDG_RUNTIME_DIR": "${localEnv:XDG_RUNTIME_DIR}",
+        "XAUTHORITY":"/tmp/.Xauthority",
+        "PULSE_SERVER": "${localEnv:PULSE_SERVER}",
+        "MESA_D3D12_DEFAULT_ADAPTER_NAME": "${localEnv:MESA_D3D12_DEFAULT_ADAPTER_NAME}",
+
+    },
+    
+    
+    "mounts": [
+
+        "type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/user/.ssh,readonly"
+      ],
+	// "postStartCommand": ".devcontainer/dump_env.sh",
+    "customizations": {
+        "vscode": {
+            // "settings": {
+            //     "python.analysis.extraPaths": [
+            //     "/opt/ros/humble/install/lib/python3.8/site-packages/"
+            // ]$},
+            "extensions": [
+                "esbenp.prettier-vscode",
+                "jeff-hykin.better-cpp-syntax",
+                "ms-vscode.cpptools-extension-pack",
+                "ms-python.python",
+                // "donjayamanne.python-environment-manager",
+                 "GitHub.copilot",
+                 "ms-toolsai.jupyter",
+                 "ms-toolsai.vscode-jupyter-powertoys",
+                // "ms-iot.vscode-ros",
+                // "streetsidesoftware.code-spell-checker",
+            ]
+        }
+    }
+  }
+  

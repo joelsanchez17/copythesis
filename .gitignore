@@ -1,0 +1,9 @@
+# Ignore specific folders (add a slash at the end)
+build/
+data/
+master_thesis/drake_env
+master_thesis/pytorch_env
+
+# Ignore specific file types
+*.xlsx
+*.log

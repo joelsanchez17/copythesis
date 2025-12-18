@@ -1,0 +1,3 @@
+from sympy import *
+
+e = MutableDenseMatrix([[1, 0, 0, Float('-0.62', precision=53)], [0, 1, 0, 0], [0, 0, 1, Float('0.025000000000000001', precision=53)], [0, 0, 0, 1]])

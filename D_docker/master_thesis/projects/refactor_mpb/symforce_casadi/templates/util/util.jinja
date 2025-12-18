@@ -1,0 +1,223 @@
+{# ----------------------------------------------------------------------------
+ # SymForce - Copyright 2022, Skydio, Inc.
+ # This source code is under the Apache 2.0 license found in the LICENSE file.
+ # ---------------------------------------------------------------------------- #}
+
+{# ------------------------------------------------------------------------- #}
+{# Utilities for CasaDi code generation templates.                          #}
+{# ------------------------------------------------------------------------- #}
+
+{# Convert a class to the emitted string
+ #
+ # Args:
+ #     T_or_value (type or Element):
+ #     name (str): Name in case type is a generated struct
+ #     is_input (bool): Is this an input argument or return value?
+ #     available_classes (T.List[type]):  A list sym classes already available (meaning
+ #       they should be referenced by just their name, and not, say, sym.Rot3).
+ #}
+{%- macro format_typename(T_or_value, name, is_input, available_classes = []) %}
+    {%- set T = typing_util.get_type(T_or_value) -%}
+    {%- if T.__name__ == 'DataBuffer' -%}
+        {{ raise('CasaDi backend does not support DataBuffers, got DataBuffer for "{}"'.format(name)) }}
+    {%- elif T.__name__ == 'Symbol' or is_symbolic(T_or_value) or T.__name__ == "float" -%}
+        casadi.SX | casadi.MX | casadi.DM
+    {%- elif T.__name__ == 'NoneType' -%}
+        None
+    {%- elif issubclass(T, Matrix) -%}
+        casadi.SX | casadi.MX | casadi.DM
+    {%- elif issubclass(T, Values) -%}
+        {{ raise('CasaDi backend does not support Values (inside Values), convert everything to matrices or whatever like this: \n
+        
+inputs = Values()
+L = sf.Matrix(2,1).symbolic("L")
+m = sf.Matrix(2,1).symbolic("m")
+ang = sf.Matrix(2,1).symbolic("a")
+dang = sf.Matrix(2,1).symbolic("da")
+inputs["ang"] = ang
+inputs["dang"] = dang
+
+inputs["g"] = g
+
+inputs["L"] = L
+inputs["m"] = m') }}
+    {%- elif is_sequence(T_or_value) -%}
+        {%- if is_input -%}
+            T.Sequence[{{ format_typename(T_or_value[0], name, is_input) }}]
+        {%- else -%}
+            T.List[float]
+        {%- endif -%}
+    {%- else -%}
+        {{ raise('CasaDi backend does not support geo or cam types, got value "{}" of type `{}`'.format(name, T)) }}
+    {%- endif -%}
+{% endmacro -%}
+
+{# ------------------------------------------------------------------------- #}
+
+{# Get the type of the object in the ouput Values with key given by spec.return_key
+ #
+ # Args:
+ #     spec (Codegen):
+ #     available_classes (T.List[type]):  A list sym classes already available (meaning
+ #       they should be referenced by just their name, and not, say, sym.Rot3).
+ #}
+{%- macro get_return_type(spec, available_classes = []) %}
+    {%- if spec.outputs.keys() | length == 1 -%}
+        {%- set name, type = spec.outputs.items() | first -%}
+        {{ format_typename(type, name, is_input=False, available_classes=available_classes) }}
+    {%- elif spec.outputs -%}
+        T.Tuple[
+        {%- for name, type in spec.outputs.items() -%}
+        {{ format_typename(type, name, is_input=False, available_classes=available_classes) }}{% if not loop.last %}, {% endif %}
+        {%- endfor -%}]
+    {%- else -%}
+        None
+    {%- endif -%}
+{% endmacro -%}
+
+{# ------------------------------------------------------------------------- #}
+
+{# Format function docstring
+ #
+ # Args:
+ #     docstring (str):
+ #}
+{% macro print_docstring(docstring) %}
+"""
+{%- for line in docstring.split('\n') %}
+{{ '{}'.format(line) }}
+{% endfor %}
+
+
+"""
+{% endmacro %}
+
+{# ------------------------------------------------------------------------- #}
+{# Generate function name and arguments:
+ #
+ # Args:
+ #     spec (Codegen):
+ #}
+{%- macro function_name_and_args(spec) -%}
+{{ spec.name }}(
+{%- for name in spec.inputs.keys() -%}
+{{ name }},{{ ' ' }}
+{%- endfor -%})
+{%- endmacro -%}
+
+{# ------------------------------------------------------------------------- #}
+
+{# Generate function declaration
+ #
+ # Args:
+ #     spec (Codegen):
+ #     is_method (bool): True if function is a method of a class,
+ #     available_classes (T.List[type]):  A list sym classes already available (meaning
+ #       they should be referenced by just their name, and not, say, sym.Rot3).
+ #}
+{%- macro function_declaration(spec, is_method = False, available_classes = []) -%}
+{%- if is_method and "self" not in spec.inputs -%}
+@staticmethod
+{% endif %}
+def {{ function_name_and_args(spec) }}:
+    # type: (
+    {%- for name, type in spec.inputs.items() -%}
+    {{ format_typename(type, name, is_input=True, available_classes=available_classes) }},{{ ' ' }}
+    {%- endfor -%}) -> {{ get_return_type(spec, available_classes=available_classes) }}
+{%- endmacro -%}
+
+
+{# Generate Casadi function declaration
+ #
+ # Args:
+ #     spec (Codegen):
+ #}
+{%- macro casadi_function_declaration(spec) -%}
+{% for name, type in spec.inputs.items() %}
+    {%- set T = typing_util.get_type(type) -%}
+    {%- if issubclass(T, Matrix) -%}
+        {%- set rows = type.shape[0] -%}
+        {%- set cols = type.shape[1] -%}
+{{name}}_mx = casadi.MX.sym('{{name}}', {{rows}}, {{cols}})
+    {%- elif T.__name__ == 'Symbol' or is_symbolic(T_or_value) or T.__name__ == "float" %}
+{{name}}_mx = casadi.MX.sym('{{name}}', 1, 1)
+
+    {% endif %}
+
+{% endfor %}
+{{ spec.name }} = casadi.Function('{{ spec.name }}', [{% for name, type in spec.inputs.items() %}
+{{name}}_mx{% if not loop.last %},{% endif %}
+{%- endfor -%}], [{{spec.name}}({% for name, type in spec.inputs.items() %}
+{{name}}_mx{% if not loop.last %},{% endif %}
+{%- endfor -%})],dict([('cse',True,),('always_inline',True)]))
+{%- endmacro -%}
+
+{# ------------------------------------------------------------------------- #}
+
+{# Generate inner code for computing the given expression.
+ #
+ # Args:
+ #     spec (Codegen):
+ #     available_classes (T.List[type]):  A list sym classes already available (meaning
+ #       they should be referenced by just their name, and not, say, sym.Rot3).
+ #}
+{% macro expr_code(spec, available_classes = []) %}
+    # Total ops: {{ spec.print_code_results.total_ops }}
+
+
+    # Input arrays
+    {% for name, type in spec.inputs.items() %}
+        {% set T = typing_util.get_type(type) %}
+        {% if not issubclass(T, Matrix) and not issubclass(T, Values) and not is_symbolic(type) and not is_sequence(type) and not T.__name__ == "float" %}
+    _{{ name }} = {{ name }}.data
+        {% endif %}
+    {% endfor %}
+
+    # Intermediate terms ({{ spec.print_code_results.intermediate_terms | length }})
+    {% for lhs, rhs in spec.print_code_results.intermediate_terms %}
+    {{ lhs }} = {{ rhs }}
+    {% endfor %}
+
+    # Output terms
+    {# Render all non-sparse terms -#}
+    {% for name, type, terms in spec.print_code_results.dense_terms %}
+        {% set T = typing_util.get_type(type) %}
+        {% if issubclass(T, Matrix) %}
+            {% set rows = type.shape[0] %}
+            {% set cols = type.shape[1] %}
+    _{{ name }} = casadi.blockcat([
+            {% for j in range(rows) %}
+                [
+                {% for i in range(cols) %}
+                    {# NOTE(brad): The order of the terms is the storage order of geo.Matrix. If the
+                    storage order of geo.Matrix is changed (i.e., from column major to row major),
+                    the index into terms will have to be changed to match that order. #}
+                    {{ terms[i * rows + j][1] }}{% if not loop.last %},{% endif %}
+                {% endfor %}
+                ] {% if not loop.last %},{% endif %}
+    
+            {% endfor %}
+            ]
+    )
+        {% elif not (is_symbolic(type) or T.__name__ == "float") %}
+            {{ raise('CasaDi backend does not support Sequence outputs, got output "{}" of type `{}`'.format(name, type)) }}
+        {% else %}
+    _{{name}} = {{ terms[0][1] }}
+        {% endif %}
+    {% endfor %}
+
+    {% for name, type, terms in spec.print_code_results.sparse_terms %}
+        {{ raise("CasaDi backend does not support sparse outputs: " + name) }}
+    {% endfor %}
+
+    return
+    {%- for name, type in spec.outputs.items() %}
+        {% set T = typing_util.get_type(type) %}
+        {% if issubclass(T, Matrix) or is_symbolic(type) or T.__name__ == "float" %}
+ _{{name}}
+        {%- else -%}
+            {{ raise('CasaDi backend only supports sf.Scalar and sf.Matrix outputs, got output "{}" of type `{}`'.format(name, T)) }}
+        {%- endif %}
+        {%- if not loop.last %}, {% endif %}
+    {%- endfor -%}
+{% endmacro %}

@@ -1,0 +1,9 @@
+package diff_co_lcm;
+
+struct lcmt_global_solve
+{
+  int64_t utime;
+  lcmt_bspline bspline_object;
+  lcmt_bspline bspline_robot_1;
+  lcmt_bspline bspline_robot_2;  
+}

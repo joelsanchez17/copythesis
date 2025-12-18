@@ -1,0 +1,2 @@
+linear_solver mumps
+print_level 0

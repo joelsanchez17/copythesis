@@ -1,0 +1,29 @@
+from sympy import *
+q_1 = Symbol('q_1')
+q_3 = Symbol('q_3')
+q_0 = Symbol('q_0')
+q_2 = Symbol('q_2')
+x0 = cos(q_3)
+x1 = sin(q_2)
+x2 = sin(q_0)
+x3 = 1.0*x2
+x4 = x1*x3
+x5 = cos(q_1)
+x6 = cos(q_2)
+x7 = cos(q_0)
+x8 = 1.0*x7
+x9 = 1.0*x4 - 1.0*x5*x6*x8
+x10 = sin(q_3)
+x11 = sin(q_1)
+x12 = x11*x8
+x13 = x3*x6
+x14 = x1*x8
+x15 = 0.0825*x1
+x16 = 0.316*x11
+x17 = 0.0825*x6
+x18 = x17*x5
+x19 = -1.0*x13*x5 - 1.0*x14
+x20 = x11*x3
+x21 = 1.0*x11
+x22 = x21*x6
+e = MutableDenseMatrix([[x0*x9 - x10*x12, -x0*x12 - x10*x9, -x13 - x14*x5, x15*x2 - x16*x7 - x18*x7 + Float('0.53500000000000003', precision=53)], [x0*x19 - x10*x20, -x0*x20 - x10*x19, -x4*x5 + Float('1.0', precision=53)*x6*x7, -x15*x7 - x16*x2 - x18*x2], [-x0*x22 + Float('1.0', precision=53)*x10*x5, Float('1.0', precision=53)*x0*x5 + x10*x22, -x1*x21, -x11*x17 + Float('0.316', precision=53)*x5 + Float('0.35800000000000004', precision=53)], [0, 0, 0, Float('1.0', precision=53)]])

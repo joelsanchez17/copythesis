@@ -1,0 +1,13 @@
+package diff_co_lcm;
+
+struct lcmt_support_vector
+{
+  int64_t utime;
+  int32_t num_support_vectors;
+  int32_t num_weights;
+  int32_t support_vector_dimension;
+  int32_t weights_dimension;
+
+  double support_vectors[num_support_vectors][support_vector_dimension];
+  double weights[num_weights][weights_dimension];
+}

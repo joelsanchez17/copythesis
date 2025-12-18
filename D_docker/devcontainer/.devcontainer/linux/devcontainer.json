@@ -1,0 +1,50 @@
+{
+	"name": "Stuff",
+    "build": { "dockerfile": "Dockerfile","context": ".." },
+	"runArgs": [
+        // "--cap-add=SYS_PTRACE", // enable debugging, e.g. gdb
+        "--ipc=host", // shared memory transport with host, e.g. rviz GUIs
+        "--network=host", // network access to host interfaces, e.g. eth0
+        // "--pid=host", // DDS discovery with host, without --network=host
+        "--privileged", // device access to host peripherals, e.g. USB
+        // "--gpus=all",
+        
+    ],
+    "hostRequirements": { "gpu": "optional" },
+    "initializeCommand": "echo \"export USERNAME=$USER\nexport USER_UID=$(id -u $USER)\nexport GROUPNAME=$(id -gn $USER)\nexport GROUP_GID=$(id -g $USER)\" > .devcontainer/.env",
+    "containerEnv": {
+        "DISPLAY": "${localEnv:DISPLAY}",
+        "WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
+        "XDG_RUNTIME_DIR": "${localEnv:XDG_RUNTIME_DIR}",
+        "XAUTHORITY":"/tmp/.Xauthority",
+        "PULSE_SERVER": "${localEnv:PULSE_SERVER}",
+
+    },
+    
+    "mounts": [
+            "source=${localEnv:HOME}${localEnv:USERPROFILE},target=/host-home-folder,type=bind,consistency=cached",
+        "type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/user/.ssh,readonly"
+      ],
+	// "postCreateCommand": ".devcontainer/setup.sh",
+    "customizations": {
+        "vscode": {
+            // "settings": {
+            //     "python.analysis.extraPaths": [
+            //     "/opt/ros/humble/install/lib/python3.8/site-packages/"
+            // ]$},
+            "extensions": [
+                "esbenp.prettier-vscode",
+                "jeff-hykin.better-cpp-syntax",
+                "ms-vscode.cpptools-extension-pack",
+                "ms-python.python",
+                // "donjayamanne.python-environment-manager",
+                 "GitHub.copilot",
+                 "ms-toolsai.jupyter",
+                 "ms-toolsai.vscode-jupyter-powertoys",
+                // "ms-iot.vscode-ros",
+                // "streetsidesoftware.code-spell-checker",
+            ]
+        }
+    }
+  }
+  

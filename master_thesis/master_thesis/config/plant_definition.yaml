@@ -1,0 +1,461 @@
+transforms:
+  robot_0: 
+    translation: [0.535, 0.0, 0.025]
+    rpy: [0.0, 0.0, 3.141592653589793]
+
+  robot_1:
+    translation: [-0.62, 0.0, 0.025]
+    rpy: [0.0, 0.0, 0.0]
+
+obstacles:
+  obstacle_1:
+    shape: sphere
+    radius: 0.1
+  obstacle_2:
+    shape: sphere
+    radius: 0.1
+  obstacle_3:
+    shape: sphere
+    radius: 0.1
+  obstacle_4:
+    shape: sphere
+    radius: 0.1
+  obstacle_5:
+    shape: sphere
+    radius: 0.1
+  obstacle_6:
+    shape: box
+    width: 0.5
+    height: 0.5
+    depth: 0.005
+  obstacle_7:
+    shape: box
+    width: 0.5
+    height: 0.5
+    depth: 0.005
+
+svm_params:
+  groups:
+    group_1:
+      links: [panda_link1, panda_link2]
+      indices: [[5], [6]]
+      prob_indices: [[5], [6]]
+      num_obstacle_categories: 1
+      inner_map_size: 4
+      num_support_points_per_block: 32
+      outer_map_size: 2
+      hessian_parallelization: serial
+      jacobian_parallelization: serial
+
+    group_2:
+      links: [panda_link3, panda_link4]
+      indices: [[7], [8]]
+      prob_indices: [[7], [8]]
+      num_obstacle_categories: 1
+      inner_map_size: 4
+      num_support_points_per_block: 32
+      outer_map_size: 4
+      hessian_parallelization: serial
+      jacobian_parallelization: serial
+
+    group_3:
+      links: [panda_link5, panda_link6, panda_link7, panda_hand]
+      indices: [[9], [10], [11], [1]]
+      prob_indices: [[9], [10], [11], [1]]
+      num_obstacle_categories: 1
+      inner_map_size: 4
+      num_support_points_per_block: 32
+      outer_map_size: 8
+      hessian_parallelization: serial
+      jacobian_parallelization: serial
+
+gaze_params:
+  groups:
+    group_1:
+      links: [panda_link6, panda_hand]
+      indices: [[10], [1]]
+      inner_map_size: 4
+      num_support_points_per_block: 32
+      outer_map_size: 2
+      hessian_parallelization: serial
+      jacobian_parallelization: serial
+
+sim_camera_params:
+  camera_1:
+    name: camera_1
+    attached_to: 
+      frame_name: world_frame
+      model_instance: DefaultModelInstance
+    pose:
+      translation: [0.0, 0.0, 0.0]
+      rpy: [0.0, 0.0, 0.0]
+    width: 640
+    height: 480
+    fov_y: 1.0
+    renderer:
+      name: renderer
+      lights:
+        color: [1.0, 1.0, 1.0, 1.0]
+    clipping_range:
+      near: 0.1
+      far: 10.0
+    depth_range:
+      min: 0.1
+      max: 10.0
+
+  camera_2:
+    name: camera_2
+    attached_to: 
+      frame_name: EE_frame
+      model_instance: robot_0
+    pose:
+      translation: [0.0, 0.0, 0.0]
+      rpy: [0.0, 0.0, 0.0]
+    width: 640
+    height: 480
+    fov_y: 1.0
+    renderer:
+      name: renderer
+      lights:
+        color: [1.0, 1.0, 1.0, 1.0]
+    clipping_range:
+      near: 0.01
+      far: 7.0
+    depth_range:
+      min: 0.01
+      max: 7.0
+
+
+
+# transforms:
+#   robot_0: 
+#     translation: [0.535, 0.0, 0.025]
+#     rpy: [0.0, 0.0, 3.141592653589793]
+
+#   robot_1:
+#     translation: [-0.62, 0.0, 0.025]
+#     rpy: [0.0, 0.0, 0.0]
+
+# obstacles:
+#   obstacle_1:
+#     shape: sphere
+#     radius: 0.1
+#   obstacle_2:
+#     shape: sphere
+#     radius: 0.1
+#   obstacle_3:
+#     shape: sphere
+#     radius: 0.1
+#   obstacle_4:
+#     shape: sphere
+#     radius: 0.1
+#   obstacle_5:
+#     shape: sphere
+#     radius: 0.1
+#   obstacle_6:
+#     shape: box
+#     width: 0.5
+#     height: 0.5
+#     depth: 0.005
+#   obstacle_7:
+#     shape: box
+#     width: 0.5
+#     height: 0.5
+#     depth: 0.005
+
+
+
+# svm_params:
+#   groups:
+#     group_1:
+#       links: [panda_link1, panda_link2]
+#       indices: [[4], [5]]        # panda_link1=5, panda_link2=6 → 0-based [4,5]
+#       prob_indices: [[4], [5]]
+#       num_obstacle_categories: 1
+#       inner_map_size: 4
+#       num_support_points_per_block: 32
+#       outer_map_size: 2
+#       hessian_parallelization: serial
+#       jacobian_parallelization: serial
+
+#     group_2:
+#       links: [panda_link3, panda_link4]
+#       indices: [[6], [7]]        # panda_link3=7, panda_link4=8 → 0-based [6,7]
+#       prob_indices: [[6], [7]]
+#       num_obstacle_categories: 1
+#       inner_map_size: 4
+#       num_support_points_per_block: 32
+#       outer_map_size: 4
+#       hessian_parallelization: serial
+#       jacobian_parallelization: serial
+
+#     group_3:
+#       links: [panda_link5, panda_link6, panda_link7, panda_hand]
+#       indices: [[8], [9], [10], [0]]   # panda_link5=9, panda_link6=10, panda_link7=11, panda_hand=1 → 0-based [8,9,10,0]
+#       prob_indices: [[8], [9], [10], [0]]
+#       num_obstacle_categories: 1
+#       inner_map_size: 4
+#       num_support_points_per_block: 32
+#       outer_map_size: 8
+#       hessian_parallelization: serial
+#       jacobian_parallelization: serial
+
+
+
+
+
+
+# # svm_params:
+# #   groups:
+# #     group_1:
+# #       links: [panda_link1, panda_link2]
+# #       indices: [[0], [1]]
+# #       prob_indices: [[0], [1]]
+# #       num_obstacle_categories: 1
+# #       inner_map_size: 4
+# #       num_support_points_per_block: 32
+# #       outer_map_size: 2
+# #       hessian_parallelization: serial
+# #       jacobian_parallelization: serial
+
+# #     group_2:
+# #       links: [panda_link3, panda_link4]
+# #       indices: [[2], [3]]
+# #       prob_indices: [[2], [3]]
+# #       num_obstacle_categories: 1
+# #       inner_map_size: 4
+# #       num_support_points_per_block: 32
+# #       outer_map_size: 4
+# #       hessian_parallelization: serial
+# #       jacobian_parallelization: serial
+
+# #     group_3:
+# #       links: [panda_link5, panda_link6, panda_link7, panda_hand]
+# #       indices: [[5], [6], [7], [9]]
+# #       prob_indices: [[5], [6], [7], [9]]
+# #       num_obstacle_categories: 1
+# #       inner_map_size: 4
+# #       num_support_points_per_block: 32
+# #       outer_map_size: 8
+# #       hessian_parallelization: serial
+# #       jacobian_parallelization: serial
+
+# gaze_params:
+#   groups:
+#     group_1:
+#       links: [panda_link6, panda_hand]
+#       indices: [[5], [7]]
+#       inner_map_size: 4
+#       num_support_points_per_block: 32
+#       outer_map_size: 2
+#       hessian_parallelization: serial
+#       jacobian_parallelization: serial
+
+# sim_camera_params:
+#   camera_1:
+#     name: camera_1
+#     attached_to: 
+#       frame_name: world_frame
+#       model_instance: DefaultModelInstance
+#     pose:
+#       translation: [0.0, 0.0, 0.0]
+#       rpy: [0.0, 0.0, 0.0]
+#     width: 640
+#     height: 480
+#     fov_y: 1.0
+#     renderer:
+#       name: renderer
+#       lights:
+#         color: [1.0, 1.0, 1.0, 1.0]
+#     clipping_range:
+#       near: 0.1
+#       far: 10.0
+#     depth_range:
+#       min: 0.1
+#       max: 10.0
+
+#   camera_2:
+#     name: camera_2
+#     attached_to: 
+#       frame_name: EE_frame
+#       model_instance: robot_0
+#     pose:
+#       translation: [0.0, 0.0, 0.0]
+#       rpy: [0.0, 0.0, 0.0]
+#     width: 640
+#     height: 480
+#     fov_y: 1.0
+#     renderer:
+#       name: renderer
+#       lights:
+#         color: [1.0, 1.0, 1.0, 1.0]
+#     clipping_range:
+#       near: 0.01
+#       far: 7.0
+#     depth_range:
+#       min: 0.01
+#       max: 7.0
+
+
+# # transforms:
+# #   robot_0: 
+# #     translation:
+# #       [0.535, 0.0, 0.025]
+# #     rpy:
+# #       [0.0, 0.0, 3.141592653589793]
+
+# #   robot_1:
+# #     translation:
+# #       [-0.62, 0.0, 0.025]
+# #     rpy:
+# #       [0.0, 0.0, 0.0]
+# # obstacles:
+# #   obstacle_1:
+# #     shape: sphere
+# #     radius: 0.1
+# #   obstacle_2:
+# #     shape: sphere
+# #     radius: 0.1
+# #   obstacle_3:
+# #     shape: sphere
+# #     radius: 0.1
+# #   obstacle_4:
+# #     shape: sphere
+# #     radius: 0.1
+# #   obstacle_5:
+# #     shape: sphere
+# #     radius: 0.1
+# #   obstacle_6:
+# #     shape: box
+# #     width: 0.5
+# #     height: 0.5
+# #     depth: 0.005
+# #   obstacle_7:
+# #     shape: box
+# #     width: 0.5
+# #     height: 0.5
+# #     depth: 0.005
+    
+# # svm_params:
+# #   groups:
+# #     group_1:
+# #       links: [panda_link1, panda_link2]
+# #       indices: [[4], [4]]
+# #       prob_indices: [[3,4],[2,4,5]]
+# #       num_obstacle_categories: 1
+# #       inner_map_size: 4
+# #       num_support_points_per_block: 32
+# #       outer_map_size: 2
+# #       hessian_parallelization: serial
+# #       jacobian_parallelization: serial
+# #     group_2:
+# #       links: [panda_link3, panda_link4]
+# #       indices: [[3], [6]]
+# #       prob_indices: [[1],[0,3,4,5]]
+# #       num_obstacle_categories: 1
+# #       inner_map_size: 4
+# #       num_support_points_per_block: 32
+# #       outer_map_size: 4
+# #       hessian_parallelization: serial
+# #       jacobian_parallelization: serial
+# #     group_3:
+# #       links: [panda_link5]
+# #       indices: [[0,11]]
+# #       prob_indices: [[0,2,4,6,10]]
+# #       num_obstacle_categories: 1
+# #       inner_map_size: 4
+# #       num_support_points_per_block: 32
+# #       outer_map_size: 6
+# #       hessian_parallelization: serial
+# #       jacobian_parallelization: serial
+# #     group_4:
+# #       links: [panda_link6, panda_link7, panda_link8,panda_hand, panda_leftfinger,panda_rightfinger]
+# #       # indices: [panda_link6, panda_link7, panda_link8, panda_hand] panda_link8 sorta fucks up codegen
+# #       indices: [[0],[],[],[0],[],[]]
+# #       prob_indices: [[0,3],[0],[0],[1,3,4,8],[],[]]
+# #       num_obstacle_categories: 1
+# #       inner_map_size: 4
+# #       num_support_points_per_block: 32
+# #       outer_map_size: 12
+# #       hessian_parallelization: openmp
+# #       jacobian_parallelization: openmp
+      
+# # gaze_params:
+# #   groups:
+# #     group_1:
+# #       # links: [panda_link7, panda_hand]
+# #       links: [panda_link6, panda_hand]
+# #       indices: [[0], [2]]
+# #       inner_map_size: 4
+# #       num_support_points_per_block: 32
+# #       outer_map_size: 2
+# #       hessian_parallelization: serial
+# #       jacobian_parallelization: serial
+# # sim_camera_params:
+# #   camera_1:
+# #     name: camera_1
+# #     attached_to: 
+# #       frame_name: world_frame
+# #       model_instance: DefaultModelInstance
+# #     pose:
+# #       translation: [0.0, 0.0, 0.0]
+# #       rpy: [0.0, 0.0, 0.0]
+# #     width: 640
+# #     height: 480
+# #     fov_y: 1.0
+# #     renderer:
+# #       name: renderer
+# #       lights:
+# #         color: [1.0, 1.0, 1.0, 1.0]
+# #     clipping_range:
+# #       near: 0.1
+# #       far: 10.0
+# #     depth_range:
+# #       min: 0.1
+# #       max: 10.0
+# #   camera_2:
+# #     name: camera_2
+# #     attached_to: 
+# #       frame_name: EE_frame
+# #       model_instance: robot_0
+# #     pose:
+# #       translation: [0.0, 0.0, 0.0]
+# #       rpy: [0.0, 0.0, 0.0]
+# #     width: 640
+# #     height: 480
+# #     fov_y: 1.0
+# #     renderer:
+# #       name: renderer
+# #       lights:
+# #         color: [1.0, 1.0, 1.0, 1.0]
+# #     clipping_range:
+# #       near: 0.01
+# #       far: 7.0
+# #     depth_range:
+# #       min: 0.01
+# #       max: 7.0
+
+# # #   scene_graph.AddRenderer(
+# # #     renderer_name, MakeRenderEngineVtk(RenderEngineVtkParams(lights = [LightParameter(color=Rgba(r=1.0,g=1.0,b=1.0), )])))
+# # # intrinsics = CameraInfo(
+# # #     width=640,
+# # #     height=480,
+# # #     fov_y=np.pi/5,
+# # # )
+# # # # https://drake.mit.edu/pydrake/pydrake.geometry.html?highlight=rendercameracore#pydrake.geometry.RenderCameraCore
+# # # core = RenderCameraCore(
+# # #     renderer_name,
+# # #     intrinsics,
+# # #     ClippingRange(0.01, 10.0),
+# # #     RigidTransform(),
+# # # )
+
+# # # camera_1 = Camera(builder,plant,scene_graph,'camera_1',core,
+# # #                     DepthRange(0.1,10),
+# # #                     log_depth = True,
+# # #                     log_color = True,
+# # #                     log_label = True,
+# # #                     fps = 15,
+# # #                     save_video=True,
+# # #                     show_window=False)
+    

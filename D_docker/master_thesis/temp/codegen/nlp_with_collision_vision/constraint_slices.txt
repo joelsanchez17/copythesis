@@ -1,0 +1,5 @@
+sample_constraint: 0, 160
+object_pose_constraint: 160, 168
+quaternion_constraint: 168, 188
+velocity_bounds_constraint: 188, 587
+initial_configuration_velocity_constraint: 587, 622

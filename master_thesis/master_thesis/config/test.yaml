@@ -1,0 +1,55 @@
+transforms:
+  robot_0: 
+    translation: [0.535, 0.0, 0.025]
+    rpy: [0.0, 0.0, 3.141592653589793]
+
+    robot_1:
+      translation: [-0.62, 0.0, 0.025]
+      rpy: [0.0, 0.0, 0.0]
+
+svm_params:
+  groups:
+    group_1:
+      links: [panda_link1, panda_link2]
+      indices: [[5], [6]]
+      prob_indices: [[5], [6]]
+      num_obstacle_categories: 1
+      inner_map_size: 4
+      num_support_points_per_block: 32
+      outer_map_size: 2
+      hessian_parallelization: serial
+      jacobian_parallelization: serial
+
+    group_2:
+      links: [panda_link3, panda_link4]
+      indices: [[7], [8]]
+      prob_indices: [[7], [8]]
+      num_obstacle_categories: 1
+      inner_map_size: 4
+      num_support_points_per_block: 32
+      outer_map_size: 4
+      hessian_parallelization: serial
+      jacobian_parallelization: serial
+
+    group_3:
+      links: [panda_link5, panda_link6, panda_link7, panda_hand]
+      indices: [[9], [10], [11], [1]]
+      prob_indices: [[9], [10], [11], [1]]
+      num_obstacle_categories: 1
+      inner_map_size: 4
+      num_support_points_per_block: 32
+      outer_map_size: 8
+      hessian_parallelization: serial
+      jacobian_parallelization: serial
+
+gaze_params:
+  groups:
+    group_1:
+      links: [panda_link6, panda_hand]
+      indices: [[10], [1]]
+      inner_map_size: 4
+      num_support_points_per_block: 32
+      outer_map_size: 2
+      hessian_parallelization: serial
+      jacobian_parallelization: serial
+
